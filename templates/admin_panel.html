@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="h4 mb-3">Панель администратора</h1>
+<p class="text-muted small mb-4">
+    Здесь отображаются все заявки пользователей портала «Банкетам.Нет».
+</p>
+
+<!-- Блок фильтров -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label class="form-label small fw-semibold">Фильтр по статусу</label>
+        <select id="filterStatus" class="form-select form-select-sm">
+            <option value="all">Все статусы</option>
+            <option value="new">Новая</option>
+            <option value="progress">Банкет назначен</option>
+            <option value="done">Банкет завершен</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label small fw-semibold">Поиск (пользователь / помещение)</label>
+        <input type="text" id="filterSearch" class="form-control form-control-sm" placeholder="Введите имя или тип помещения...">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label small fw-semibold">Сортировка</label>
+        <select id="sortBy" class="form-select form-select-sm">
+            <option value="id_asc">По ID (возр.)</option>
+            <option value="id_desc">По ID (убыв.)</option>
+            <option value="user_asc">По пользователю (А-Я)</option>
+            <option value="course_asc">По курсу (А-Я)</option>
+            <option value="date_asc">По дате начала (сначала старые)</option>
+            <option value="date_desc">По дате начала (сначала новые)</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100">Сбросить фильтры</button>
+    </div>
+</div>
+
+<div class="table-responsive mb-4">
+    <table class="table align-middle small table-hover" id="applicationsTable">
+        <thead class="table-light">
+            <tr>
+                <th data-sort="id" style="cursor: pointer;">ID <i class="bi bi-arrow-down-up"></i></th>
+                <th data-sort="user" style="cursor: pointer;">Пользователь <i class="bi bi-arrow-down-up"></i></th>
+                <th data-sort="course" style="cursor: pointer;">Курс <i class="bi bi-arrow-down-up"></i></th>
+                <th data-sort="start_date" style="cursor: pointer;">Дата начала <i class="bi bi-arrow-down-up"></i></th>
+                <th>Оплата</th>
+                <th>Статус</th>
+                <th>Управление</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="small text-muted">
+        Показано <span id="pageStart">0</span> - <span id="pageEnd">0</span> из <span id="totalCount">0</span>
+    </div>
+    <nav>
+        <ul class="pagination pagination-sm mb-0" id="pagination">
+        </ul>
+    </nav>
+</div>
+
+<hr class="my-4">
+<h2 class="h6 mb-3">Отзывы пользователей</h2>
+<div id="reviewsBlock">
+    {% if reviews %}
+        <div class="list-group small">
+            {% for review in reviews %}
+                <div class="list-group-item flex-column align-items-start">
+                    <div class="d-flex w-100 justify-content-between">
+                        <span class="fw-semibold">{{ review.user.fio }}</span>
+                        <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                    </div>
+                    <p class="mb-1 mt-1">{{ review.text }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted small">Отзывов пока нет.</p>
+    {% endif %}
+</div>
+
+<!-- Контейнер для тост-уведомлений -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                <!-- Сообщение -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const applicationsData = {{ applications_json | tojson | safe }};
+    const statusLabels = {{ STATUS_LABELS | tojson | safe }};
+    const payMethods = {{ PAY_METHODS | tojson | safe }};
+
+    let currentData = [...applicationsData];
+
+    let currentPage = 1;
+    const rowsPerPage = 10;
+
+    function renderTable() {
+        // Фильтрация
+        const statusFilter = document.getElementById('filterStatus').value;
+        const searchTerm = document.getElementById('filterSearch').value.toLowerCase();
+
+        let filtered = applicationsData.filter(app => {
+            if (statusFilter !== 'all' && app.status !== statusFilter) return false;
+            if (searchTerm) {
+                const userName = (app.user.fio + ' ' + app.user.email).toLowerCase();
+                const courseName = app.course_name.toLowerCase();
+                if (!userName.includes(searchTerm) && !courseName.includes(searchTerm)) return false;
+            }
+            return true;
+        });
+
+        const sortBy = document.getElementById('sortBy').value;
+        filtered.sort((a, b) => {
+            switch(sortBy) {
+                case 'id_asc': return a.id - b.id;
+                case 'id_desc': return b.id - a.id;
+                case 'user_asc': return a.user.fio.localeCompare(b.user.fio);
+                case 'course_asc': return a.course_name.localeCompare(b.course_name);
+                case 'date_asc': return new Date(a.start_date) - new Date(b.start_date);
+                case 'date_desc': return new Date(b.start_date) - new Date(a.start_date);
+                default: return 0;
+            }
+        });
+
+        const total = filtered.length;
+        document.getElementById('totalCount').innerText = total;
+        const totalPages = Math.ceil(total / rowsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, total);
+        document.getElementById('pageStart').innerText = total === 0 ? 0 : start + 1;
+        document.getElementById('pageEnd').innerText = end;
+
+        const pageData = filtered.slice(start, end);
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        pageData.forEach(app => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = app.id;
+            row.insertCell(1).innerHTML = `${escapeHtml(app.user.fio)}<br><span class="text-muted">${escapeHtml(app.user.email)}</span>`;
+            row.insertCell(2).innerText = app.course_name;
+            row.insertCell(3).innerText = app.start_date;
+            row.insertCell(4).innerText = payMethods[app.pay_method] || app.pay_method;
+            // Статус с правильным цветом
+            const statusClass = getStatusClass(app.status);
+            row.insertCell(5).innerHTML = `<span class="badge rounded-pill ${statusClass}">${statusLabels[app.status]}</span>`;
+            // Управление: две кнопки (AJAX)
+            const cellActions = row.insertCell(6);
+            cellActions.innerHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <button class="btn btn-sm btn-outline-primary change-status" data-id="${app.id}" data-status="progress" ${app.status === 'progress' ? 'disabled' : ''}>
+                        Банкет назначен
+                    </button>
+                    <button class="btn btn-sm btn-outline-success change-status" data-id="${app.id}" data-status="done" ${app.status === 'done' ? 'disabled' : ''}>
+                        Банкет завершён
+                    </button>
+                </div>
+            `;
+        });
+
+        renderPagination(totalPages);
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'new': return 'status-badge-new';
+            case 'progress': return 'status-badge-progress';
+            case 'done': return 'status-badge-done';
+            default: return 'status-badge-new';
+        }
+    }
+
+    function renderPagination(totalPages) {
+        const paginationUl = document.getElementById('pagination');
+        paginationUl.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous">&laquo;</a>`;
+        prevLi.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+        paginationUl.appendChild(prevLi);
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage-2 && i <= currentPage+2)) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = i;
+                    renderTable();
+                });
+                paginationUl.appendChild(li);
+            } else if (i === currentPage-3 || i === currentPage+3) {
+                const li = document.createElement('li');
+                li.className = 'page-item disabled';
+                li.innerHTML = '<span class="page-link">...</span>';
+                paginationUl.appendChild(li);
+            }
+        }
+
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next">&raquo;</a>`;
+        nextLi.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+        paginationUl.appendChild(nextLi);
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function bindStatusButtons() {
+        document.querySelectorAll('.change-status').forEach(btn => {
+            btn.removeEventListener('click', handleStatusChange);
+            btn.addEventListener('click', handleStatusChange);
+        });
+    }
+
+    async function handleStatusChange(e) {
+        const btn = e.currentTarget;
+        const appId = btn.getAttribute('data-id');
+        const newStatus = btn.getAttribute('data-status');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        try {
+            const response = await fetch(`/admin/application/${appId}/status`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `status=${newStatus}`
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                const appIndex = applicationsData.findIndex(a => a.id == appId);
+                if (appIndex !== -1) applicationsData[appIndex].status = newStatus;
+                const toastEl = document.getElementById('liveToast');
+                const toastMessage = document.getElementById('toastMessage');
+                toastMessage.innerText = `Статус заявки #${appId} изменён на «${statusLabels[newStatus]}»`;
+                toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+                toastEl.classList.add('bg-success');
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+                renderTable();
+            } else {
+                throw new Error(data.error || 'Ошибка изменения статуса');
+            }
+        } catch (err) {
+            const toastEl = document.getElementById('liveToast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.innerText = err.message;
+            toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            toastEl.classList.add('bg-danger');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    document.getElementById('filterStatus').addEventListener('change', () => { currentPage = 1; renderTable(); });
+    document.getElementById('filterSearch').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    document.getElementById('sortBy').addEventListener('change', () => { renderTable(); });
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        document.getElementById('filterStatus').value = 'all';
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('sortBy').value = 'id_asc';
+        currentPage = 1;
+        renderTable();
+    });
+
+    document.querySelectorAll('[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const sort = th.getAttribute('data-sort');
+            let sortValue = '';
+            switch(sort) {
+                case 'id': sortValue = document.getElementById('sortBy').value.startsWith('id_asc') ? 'id_desc' : 'id_asc'; break;
+                case 'user': sortValue = document.getElementById('sortBy').value === 'user_asc' ? 'id_desc' : 'user_asc'; break;
+                case 'course': sortValue = document.getElementById('sortBy').value === 'course_asc' ? 'id_desc' : 'course_asc'; break;
+                case 'start_date': sortValue = document.getElementById('sortBy').value === 'date_asc' ? 'date_desc' : 'date_asc'; break;
+            }
+            if (sortValue) document.getElementById('sortBy').value = sortValue;
+            renderTable();
+        });
+    });
+
+    renderTable();
+    bindStatusButtons();
+    const observer = new MutationObserver(() => bindStatusButtons());
+    observer.observe(document.getElementById('tableBody'), { childList: true, subtree: true });
+</script>
+
+{% endblock %}

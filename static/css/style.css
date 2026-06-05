@@ -1,0 +1,545 @@
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-blur: blur(12px);
+    --card-radius: 1.75rem;
+    --transition-base: all 0.25s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Анимации */
+
+.glass-card {
+    animation: fadeSlideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes fadeSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Дочерние элементы – общая длительность 0.5 секунды, небольшие задержки */
+.glass-card > * {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+.glass-card > *:nth-child(1) { animation-delay: 0.08s; }
+.glass-card > *:nth-child(2) { animation-delay: 0.16s; }
+.glass-card > *:nth-child(3) { animation-delay: 0.24s; }
+.glass-card > *:nth-child(4) { animation-delay: 0.32s; }
+.glass-card > *:nth-child(5) { animation-delay: 0.4s; }
+.glass-card > *:nth-child(6) { animation-delay: 0.48s; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Карточки заявок – плавное появление с мягким масштабом, 0.45 секунды */
+.app-card {
+    transition: transform 0.3s ease, box-shadow 0.4s ease;
+    opacity: 0;
+    animation: cardFadeIn 0.55s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Элементы списка (отзывы) – плавный выезд слева, 0.45 секунды */
+.list-group-item {
+    animation: slideInLeft 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+    opacity: 0;
+    transform: translateX(-15px);
+}
+
+@keyframes slideInLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Строки таблицы – появление с лёгким свечением, 0.45 секунды */
+.table tbody tr {
+    animation: rowFadeIn 0.45s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes rowFadeIn {
+    from {
+        opacity: 0;
+        background-color: rgba(218, 165, 32, 0.08);
+        transform: translateX(-5px);
+    }
+    to {
+        opacity: 1;
+        background-color: transparent;
+        transform: translateX(0);
+    }
+}
+
+/* Кнопки – плавное изменение размера при наведении, 0.3 секунды */
+.btn {
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.btn:hover {
+    transform: translateY(-3px);
+    transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+/* Флеш-сообщения – плавное появление сверху, 0.5 секунды */
+.alert {
+    animation: alertSlideDown 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+}
+
+@keyframes alertSlideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Дополнительно: наведение на карточки заявок – плавное */
+.app-card:hover {
+    transform: translateY(-6px) !important;
+    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.35s ease;
+}
+/* Стили */
+
+body.bg-gradient {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(145deg, #f0f4fa 0%, #e2e8f2 100%);
+    min-height: 100vh;
+    scroll-behavior: smooth;
+}
+
+.glass-nav {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 0.75rem 0;
+}
+
+.navbar-brand {
+    color: #DAA520 !important;
+    font-size: 1.5rem;
+    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, #1e2a3a, #0f172a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent !important;
+    transition: var(--transition-base);
+}
+
+.navbar-brand:hover {
+    color: #e6b422 !important;
+}
+
+.navbar-brand i {
+    color: #3b82f6;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+}
+
+.navbar-brand svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+@media (max-width: 576px) {
+    .navbar-brand svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    border-radius: 2rem;
+    color: #1f2937 !important;
+    transition: var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.navbar-nav .nav-link:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb !important;
+    transform: translateY(-1px);
+}
+
+.nav-link.active.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    background: rgba(0,0,0,0.02);
+}
+
+.nav-link.active.disabled:hover {
+    transform: none;
+    background: rgba(0,0,0,0.02);
+}
+
+.navbar-nav .logout-link {
+    color: #dc2626 !important;
+}
+
+.navbar-nav .logout-link:hover {
+    background: rgba(220, 38, 38, 0.08);
+    color: #b91c1c !important;
+}
+
+.navbar-nav .btn-register {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.navbar-toggler {
+    color: #1e293b;
+    padding: 0.5rem 0.8rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--card-radius);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-base);
+}
+
+.glass-card:hover {
+    box-shadow: 0 25px 40px -16px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.animate-fade {
+    animation: fadeSlide 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+@keyframes fadeSlide {
+    0% {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert {
+    border-radius: 1.2rem;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    backdrop-filter: blur(4px);
+}
+
+.alert-success {
+    background-color: rgba(34, 197, 94, 0.18);
+    border-left: 4px solid #22c55e;
+    color: #14532d;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.14);
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.16);
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.12);
+    border-left: 4px solid #3b82f6;
+    color: #1e3a8a;
+}
+
+.btn {
+    border-radius: 2rem;
+    padding: 0.55rem 1.5rem;
+    font-weight: 500;
+    transition: var(--transition-base);
+}
+
+.btn-outline-primary,
+.btn-outline-primary:link,
+.btn-outline-primary:visited {
+    color: #DAA520 !important;
+    border-color: #DAA520 !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: #DAA520 !important;
+    border-color: #DAA520 !important;
+    color: #fff !important;
+}
+
+/* Активная кнопка (например, выбранный способ оплаты) */
+.btn-check:checked + .btn-outline-primary,
+.btn-check:active + .btn-outline-primary {
+    background-color: #DAA520 !important;
+    border-color: #DAA520 !important;
+    color: #fff !important;
+}
+
+/* Чтобы невыбранные радиокнопки не были синими даже при фокусе */
+.btn-check:focus + .btn-outline-primary,
+.btn-check:focus-visible + .btn-outline-primary {
+    box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.5) !important;
+}
+
+/* Для ссылок-кнопок (например, «Оформить новую заявку») */
+a.btn-outline-primary {
+    color: #DAA520 !important;
+}
+a.btn-outline-primary:hover {
+    background-color: #DAA520 !important;
+    color: #fff !important;
+}
+
+.btn-primary {
+    background-color: #DAA520 !important;
+    border-color: #DAA520 !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #c4941a !important;
+    border-color: #c4941a !important;
+}
+
+.form-control, .form-select {
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.7rem 1rem;
+    transition: var(--transition-base);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    background: white;
+}
+
+/* Цвета для статус-бейджей – яркие и контрастные */
+.status-badge-new {
+    background-color: #fef3c7;  /* тёплый желтовато-оранжевый */
+    color: #b45309;
+    border-left: 3px solid #f59e0b;
+}
+.status-badge-progress {
+    background-color: #dbeafe;  /* небесно-голубой, хорошо виден */
+    color: #1e40af;
+    border-left: 3px solid #3b82f6;
+}
+.status-badge-done {
+    background-color: #dcfce7;  /* светло-зелёный */
+    color: #166534;
+    border-left: 3px solid #22c55e;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+    transition: 0.2s;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .btn-sm {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .table td, .table th {
+        padding: 0.5rem;
+    }
+}
+
+.carousel-container {
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+.carousel-img {
+    height: 400px;
+    object-fit: cover; 
+}
+
+@media (max-width: 767.98px) {
+    .carousel-img {
+        height: 220px; 
+    }
+    
+    .carousel-caption h5 {
+        font-size: 0.9rem;
+    }
+    
+    .carousel-caption p {
+        font-size: 0.7rem;
+    }
+}
+
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.carousel-indicators button {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 0 5px;
+    background-color: #fff;
+    opacity: 0.6;
+}
+
+.carousel-indicators .active {
+    opacity: 1;
+    background-color: #3b82f6;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 50%;
+    padding: 20px;
+    background-size: 50%;
+}
+
+@media (max-width: 767.98px) {
+    .glass-nav {
+        padding: 0.5rem 0;
+    }
+    
+    .navbar-brand {
+        font-size: 1.3rem;
+    }
+    
+    .glass-card {
+        border-radius: 1.5rem;
+        padding: 0.8rem !important;
+    }
+    
+    .glass-card .p-4 {
+        padding: 1.25rem !important;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.7rem 1rem;
+        justify-content: center;
+    }
+    
+    .alert {
+        font-size: 0.9rem;
+        padding: 0.85rem 1rem;
+    }
+    
+    main {
+        padding-top: 0.5rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.92);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .glass-card {
+        margin: 0 1rem;
+    }
+}
+
+.table {
+    border-radius: 1rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.table thead th {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 1rem;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+@media (max-width: 767.98px) {
+    main {
+        padding-top: 1.2rem !important;
+        margin-top: 0.5rem !important;
+    }
+    
+    .glass-card {
+        margin-top: 0.5rem;
+    }
+}

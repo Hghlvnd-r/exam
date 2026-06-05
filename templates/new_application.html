@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4 mb-3">Новая заявка на банкет</h1>
+<p class="text-muted small mb-4">
+    Выберите помещение и укажите желаемую дату начала банкета.
+</p>
+
+<form method="post" novalidate>
+    <div class="mb-3">
+        <label class="form-label">Выберите помещение</label>
+        <select name="course_name" class="form-select" required>
+            <option value="" disabled {% if not course_name %}selected{% endif %}>-- Выберите вариант --</option>
+            <option value="Зал" {% if course_name == 'Зал' %}selected{% endif %}>Зал</option>
+            <option value="Ресторан" {% if course_name == 'Ресторан' %}selected{% endif %}>Ресторан</option>
+            <option value="Летняя веранда" {% if course_name == 'Летняя веранда' %}selected{% endif %}>Летняя веранда</option>
+            <option value="Закрытая веранда" {% if course_name == 'Закрытая веранда' %}selected{% endif %}>Закрытая веранда</option>
+        </select>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Дата начала банкета</label>
+        <input type="date" name="start_date" class="form-control" required
+            value="{{ start_date or '' }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label d-block">Способ оплаты</label>
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="pay_method" id="pay_cash" value="cash"
+                autocomplete="off" {% if pay_method == 'cash' or not pay_method %}checked{% endif %}>
+            <label class="btn btn-outline-primary btn-sm" for="pay_cash">Наличными</label>
+            <input type="radio" class="btn-check" name="pay_method" id="pay_phone" value="phone"
+                autocomplete="off" {% if pay_method == 'phone' %}checked{% endif %}>
+            <label class="btn btn-outline-primary btn-sm" for="pay_phone">Перевод по номеру телефона</label>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('user_applications') }}" class="btn btn-link btn-sm">Отмена</a>
+        <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </div>
+</form>
+{% endblock %}

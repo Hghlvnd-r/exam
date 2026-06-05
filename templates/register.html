@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="h4 mb-4 text-center">Регистрация пользователя</h1>
+<p class="text-muted small text-center mb-4">
+    Заполните форму, чтобы создать учётную запись на портале «Банкетам.Нет».
+</p>
+
+<form method="post" novalidate>
+    <div class="mb-3">
+        <label class="form-label">Логин</label>
+        <input type="text" name="login" class="form-control" required
+            pattern="[A-Za-z0-9]{6,}"
+            value="{{ login or '' }}"
+            placeholder="User">
+        <div class="form-text">Только латинские буквы и цифры, не менее 6 символов.</div>
+    </div>
+        <div class="mb-3">
+        <label class="form-label">ФИО</label>
+        <input type="text" name="fio" class="form-control" required
+            pattern="[А-Яа-яЁё]{5,}"
+            value="{{ fio or '' }}"
+            placeholder="Иванов Иван Иванович">
+        <div class="form-text">ФИО должно содержать только кириллицу и пробелы.</div>
+    </div>
+        <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="text" name="email" class="form-control" required
+            pattern="[^@]+@[^@]+\.[^@]+"
+            value="{{ email or '' }}"
+            placeholder="example@gmail.com">
+        <!-- <div class="form-text"></div> -->
+    </div>
+        <div class="mb-3">
+        <label class="form-label">Номер телефона</label>
+        <input type="text" name="phone" class="form-control" required
+            pattern="8\(\d{3}\)\d{3}-\d{2}-\d{2}"
+            value="{{ phone or '' }}"
+            placeholder="8(XXX)XXX-XX-XX">
+        <!-- <div class="form-text"></div> -->
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Пароль</label>
+        <input type="password" name="password" class="form-control" required
+            value="{{ password or '' }}">
+        <div class="form-text">Пароль должен быть не короче 8 символов.</div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a href="{{ url_for('login') }}" class="small link-secondary">
+            Уже зарегистрированы? Вход
+        </a>
+        <button type="submit" class="btn btn-primary">
+            Создать пользователя
+        </button>
+    </div>
+
+</form>
+{% endblock %}
